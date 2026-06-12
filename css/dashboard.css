@@ -1,0 +1,60 @@
+/* — 智能诊断卡片 — */
+.insight-card {
+  display: flex;
+  flex-direction: column;
+}
+
+.insight-card__cta {
+  margin-top: auto;
+}
+
+.insight-card__cta:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px -6px rgba(0, 0, 0, 0.2);
+}
+
+/* — 类型切换 — */
+.type-switch {
+  display: flex;
+  gap: 4px;
+  margin-bottom: 24px;
+  background: #F1F5F9;
+  border-radius: var(--radius-sm);
+  padding: 4px;
+}
+
+.type-btn {
+  flex: 1;
+  padding: 10px 16px;
+  border: none;
+  border-radius: 6px;
+  background: transparent;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.22, 0.9, 0.3, 1);
+}
+
+.type-btn.is-active {
+  background: #fff;
+  color: var(--text-primary);
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08);
+}
+
+/* — 净资产卡微光晕 — */
+.stat-card--accent::after {
+  content: '';
+  position: absolute;
+  inset: -2px;
+  border-radius: inherit;
+  background: inherit;
+  z-index: -1;
+  opacity: 0.2;
+  animation: accent-pulse 3s ease-in-out infinite;
+}
+
+@keyframes accent-pulse {
+  0%, 100% { opacity: 0.15; transform: scale(1); }
+  50%      { opacity: 0.3; transform: scale(1.02); }
+}

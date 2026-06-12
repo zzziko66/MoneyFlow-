@@ -1,0 +1,1005 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AI顾问 · MoneyFlow</title>
+  <link rel="stylesheet" href="css/style.css">
+  <style>
+    .ai-advisor {
+      margin-top: var(--space-6);
+      background: linear-gradient(135deg, #ECFDF5 0%, #F0FDF4 100%);
+      border: 1px solid rgba(16, 185, 129, 0.15);
+      border-radius: var(--radius-lg);
+      padding: var(--space-6);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .ai-advisor::before {
+      content: '';
+      position: absolute;
+      top: -40%;
+      right: -10%;
+      width: 200px;
+      height: 200px;
+      background: radial-gradient(circle, rgba(16, 185, 129, 0.06), transparent 60%);
+      pointer-events: none;
+    }
+
+    .ai-advisor__header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: var(--space-4);
+      gap: var(--space-3);
+    }
+
+    .ai-advisor__title-group {
+      display: flex;
+      align-items: center;
+      gap: var(--space-2);
+    }
+
+    .ai-advisor__icon {
+      width: 36px;
+      height: 36px;
+      background: var(--color-primary);
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
+      flex-shrink: 0;
+    }
+
+    .ai-advisor__title {
+      font-size: 16px;
+      font-weight: 700;
+      color: var(--text-primary);
+      margin: 0;
+    }
+
+    .ai-advisor__sub {
+      font-size: 12px;
+      color: var(--text-secondary);
+      margin: 0;
+    }
+
+    .ai-advisor__actions {
+      display: flex;
+      gap: var(--space-2);
+      flex-shrink: 0;
+    }
+
+    .ai-btn {
+      background: var(--color-surface);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-sm);
+      padding: 6px 14px;
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text-secondary);
+      cursor: pointer;
+      transition: all var(--transition-fast);
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      font-family: var(--font-sans);
+    }
+
+    .ai-btn:hover {
+      border-color: var(--color-primary);
+      color: var(--color-primary);
+      background: var(--color-primary-light);
+    }
+
+    .ai-btn--primary {
+      background: var(--color-primary);
+      border-color: var(--color-primary);
+      color: #fff;
+    }
+
+    .ai-btn--primary:hover {
+      background: var(--color-primary-hover);
+      border-color: var(--color-primary-hover);
+      color: #fff;
+    }
+
+    .ai-insight-box {
+      min-height: 60px;
+      padding: var(--space-4);
+      background: rgba(255, 255, 255, 0.7);
+      border-radius: var(--radius-sm);
+      font-size: 14px;
+      line-height: 1.8;
+      color: var(--text-primary);
+      position: relative;
+    }
+
+    .ai-insight-box .cursor {
+      display: inline-block;
+      width: 2px;
+      height: 1em;
+      background: var(--color-primary);
+      margin-left: 2px;
+      vertical-align: text-bottom;
+      animation: blink-cursor 0.8s step-end infinite;
+    }
+
+    @keyframes blink-cursor {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0; }
+    }
+
+    .ai-insight-box.is-loading {
+      display: flex;
+      align-items: center;
+      gap: var(--space-3);
+      color: var(--text-secondary);
+    }
+
+    .ai-insight-box.is-loading .spinner {
+      width: 18px;
+      height: 18px;
+      border: 2px solid var(--border-color);
+      border-top-color: var(--color-primary);
+      border-radius: 50%;
+      animation: spin 0.7s linear infinite;
+      flex-shrink: 0;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    .ai-insight-box.is-empty {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--text-muted);
+      font-size: 13px;
+    }
+
+    .ai-insight-box__meta {
+      margin-top: var(--space-3);
+      font-size: 11px;
+      color: var(--text-muted);
+      text-align: right;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .ai-insight-box__meta .tag {
+      display: inline-block;
+      padding: 2px 8px;
+      background: var(--color-primary-light);
+      color: var(--color-primary-hover);
+      border-radius: 99px;
+      font-weight: 600;
+      font-size: 11px;
+    }
+
+    .api-modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.35);
+      backdrop-filter: blur(10px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+      opacity: 0;
+      visibility: hidden;
+      transition: opacity var(--transition-base), visibility var(--transition-base);
+    }
+
+    .api-modal-overlay.is-open {
+      opacity: 1;
+      visibility: visible;
+    }
+
+    .api-modal {
+      width: 100%;
+      max-width: 400px;
+      background: var(--color-surface);
+      border-radius: var(--radius-lg);
+      box-shadow: var(--shadow-float);
+      padding: var(--space-6);
+      transform: translateY(24px) scale(0.96);
+      transition: transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+
+    .api-modal-overlay.is-open .api-modal {
+      transform: translateY(0) scale(1);
+    }
+
+    .api-modal__header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: var(--space-4);
+    }
+
+    .api-modal__header h3 { font-size: 16px; margin: 0; }
+
+    .api-modal__close {
+      background: none;
+      border: none;
+      font-size: 20px;
+      color: var(--text-muted);
+      padding: 4px;
+      cursor: pointer;
+      border-radius: var(--radius-sm);
+      transition: all var(--transition-fast);
+    }
+
+    .api-modal__close:hover {
+      color: var(--text-primary);
+      background: #F3F4F6;
+    }
+
+    .api-modal .field { margin-bottom: var(--space-4); }
+
+    .api-modal .field__label {
+      display: block;
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text-secondary);
+      margin-bottom: 6px;
+    }
+
+    .api-modal .field__input {
+      width: 100%;
+      padding: 10px 14px;
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-sm);
+      font-size: 14px;
+      font-family: var(--font-mono);
+      color: var(--text-primary);
+      background: var(--color-background);
+      transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
+      box-sizing: border-box;
+    }
+
+    .api-modal .field__input:focus {
+      outline: none;
+      border-color: var(--color-primary);
+      box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.12);
+    }
+
+    .api-modal .field__hint {
+      font-size: 11px;
+      color: var(--text-muted);
+      margin-top: 4px;
+    }
+
+    .api-modal__actions {
+      display: flex;
+      gap: var(--space-2);
+      justify-content: flex-end;
+      margin-top: var(--space-5);
+    }
+
+    .topbar { animation: fade-in-up 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) both; }
+    .ai-advisor { animation: fade-in-up 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) both; animation-delay: 0.2s; }
+  </style>
+  <style>
+    .chat-section { margin-top: var(--space-6); }
+    .chat-window { height:340px;overflow-y:auto;padding:var(--space-4);display:flex;flex-direction:column;gap:var(--space-3);scroll-behavior:smooth; }
+    .chat-msg { display:flex;gap:var(--space-2);max-width:85%;animation:msg-in .3s ease-out; }
+    @keyframes msg-in { from { opacity:0;transform:translateY(8px); } to { opacity:1;transform:translateY(0); } }
+    .chat-msg--user { align-self:flex-end;flex-direction:row-reverse; }
+    .chat-msg--ai { align-self:flex-start; }
+    .chat-msg__avatar { width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0;background:var(--color-background); }
+    .chat-msg--ai .chat-msg__avatar { background:var(--color-primary-light); }
+    .chat-msg--user .chat-msg__avatar { background:#EFF6FF; }
+    .chat-msg__bubble { padding:10px 14px;border-radius:14px;font-size:13px;line-height:1.7;color:var(--text-primary);word-break:break-word; }
+    .chat-msg--ai .chat-msg__bubble { background:#F1F5F9;border-bottom-left-radius:4px; }
+    .chat-msg--user .chat-msg__bubble { background:var(--color-primary);color:#fff;border-bottom-right-radius:4px; }
+    .chat-msg__bubble .cursor { display:inline-block;width:2px;height:1em;background:var(--color-primary);margin-left:2px;vertical-align:text-bottom;animation:blink-cursor .8s step-end infinite; }
+    .chat-msg--user .chat-msg__bubble .cursor { background:rgba(255,255,255,0.8); }
+    .chat-input-area { display:flex;gap:var(--space-2);padding:var(--space-3) var(--space-4);border-top:1px solid var(--border-color);background:var(--color-background); }
+    .chat-input { flex:1;border:1.5px solid var(--border-color);border-radius:10px;padding:10px 14px;font-size:13px;color:var(--text-primary);background:var(--color-surface);outline:none;font-family:var(--font-sans);transition:border-color var(--transition-fast); }
+    .chat-input:focus { border-color:var(--color-primary); }
+    .chat-input::placeholder { color:var(--text-muted); }
+    .chat-send-btn { padding:10px 20px;border:none;border-radius:10px;background:var(--color-primary);color:#fff;font-size:13px;font-weight:600;cursor:pointer;transition:background var(--transition-fast);font-family:var(--font-sans);flex-shrink:0; }
+    .chat-send-btn:hover { background:var(--color-primary-hover); }
+    .chat-send-btn:disabled { opacity:.5;cursor:not-allowed; }
+    .chat-msg__typing { display:flex;gap:4px;align-items:center;padding:4px 0; }
+    .chat-msg__typing span { width:6px;height:6px;border-radius:50%;background:var(--text-muted);animation:typing-dot 1.2s infinite; }
+    .chat-msg__typing span:nth-child(2) { animation-delay:.2s; }
+    .chat-msg__typing span:nth-child(3) { animation-delay:.4s; }
+    @keyframes typing-dot { 0%,60%,100% { opacity:.3;transform:scale(.8); } 30% { opacity:1;transform:scale(1); } }
+  </style>
+</head>
+<body data-page="insights">
+
+  <div class="app-shell">
+
+    <aside class="sidebar">
+      <div class="sidebar__brand">
+        <span class="sidebar__brand-mark">💰</span>
+        MoneyFlow
+      </div>
+      <nav class="sidebar__nav">
+        <a href="dashboard.html" class="sidebar__link" data-page="dashboard">
+          <span class="sidebar__icon">📊</span> 财富视图
+        </a>
+        <a href="transactions.html" class="sidebar__link" data-page="transactions">
+          <span class="sidebar__icon">📜</span> 账单
+        </a>
+        <a href="insights.html" class="sidebar__link" data-page="insights">
+          <span class="sidebar__icon">💡</span> AI顾问
+        </a>
+      </nav>
+      <div class="sidebar__footer">
+        <div class="sidebar__user-wrap">
+          <div class="sidebar__user" id="sidebarUserBtn">
+            <div class="sidebar__avatar" id="sidebarAvatar">访</div>
+            <div>
+              <div class="sidebar__user-name" id="sidebarName">访客</div>
+              <div id="userTagline">MoneyFlow 用户</div>
+            </div>
+          </div>
+          <div class="sidebar__user-dropdown">
+            <button class="dropdown__item" id="editProfileBtn">⚙️ 修改账户</button>
+            <div class="sidebar-theme-divider"></div>
+            <button class="dropdown__item" id="themeSwitchBtn">🎨 切换主题</button>
+            <button class="dropdown__item dropdown__item--danger" id="logoutBtn">⏻ 退出登录</button>
+          </div>
+        </div>
+      </div>
+    </aside>
+
+    <main class="main">
+
+      <div class="topbar">
+        <div class="topbar__greeting">
+          <h1>💡 AI顾问</h1>
+          <p class="topbar__date">学点理财知识，让钱为你工作</p>
+        </div>
+        <div class="clock" id="clock-time">00:00:00</div>
+      </div>
+
+      <div class="ai-advisor">
+        <div class="ai-advisor__header">
+          <div>
+            <div class="ai-advisor__title-group">
+              <div class="ai-advisor__icon">🧠</div>
+              <div>
+                <h3 class="ai-advisor__title">AI 智能财务顾问</h3>
+                <p class="ai-advisor__sub">基于你的收支数据，生成个性化理财建议</p>
+              </div>
+            </div>
+          </div>
+          <div class="ai-advisor__actions">
+            <button class="ai-btn" id="aiRefreshBtn" title="重新生成">⟳ 刷新</button>
+            <button class="ai-btn" id="aiSettingsBtn" title="API 设置">⚙ 设置</button>
+          </div>
+        </div>
+        <div class="ai-insight-box is-empty" id="aiInsightBox">
+          <span>加载中...</span>
+        </div>
+        <div class="ai-insight-box__meta">
+          <span class="tag">AI 分析</span>
+          <span id="aiTimeLabel">—</span>
+        </div>
+      </div>
+
+      <div class="chat-section">
+        <div class="card" style="overflow:hidden;">
+          <div class="card__header" style="padding:var(--space-4) var(--space-5);border-bottom:1px solid var(--border-color);">
+            <h2 style="font-size:15px;display:flex;align-items:center;gap:8px;">
+              <span style="font-size:18px;">💬</span> 与你的财务数据对话
+            </h2>
+          </div>
+          <div class="chat-window" id="chatWindow">
+            <div class="chat-msg chat-msg--ai">
+              <div class="chat-msg__avatar">🤖</div>
+              <div class="chat-msg__bubble">
+                你好！我是你的财务助手，可以问我关于收支的任何问题，比如"我这个月花了多少钱"或"哪类支出最多"。
+              </div>
+            </div>
+          </div>
+          <div class="chat-input-area">
+            <input class="chat-input" id="chatInput" type="text" placeholder="输入你的问题..." autocomplete="off">
+            <button class="chat-send-btn" id="chatSendBtn">发送</button>
+          </div>
+        </div>
+      </div>
+
+    </main>
+  </div>
+
+  <script src="js/common.js"></script>
+  <script>if (!MF.isLoggedIn()) window.location.replace("index.html");</script>
+  <script>
+  (function () {
+    "use strict";
+
+    (function initUser() {
+      const user = MF.getUser();
+      const nameEl = document.getElementById("sidebarName");
+      const avatarEl = document.getElementById("sidebarAvatar");
+      if (nameEl) nameEl.textContent = user.nickname || "访客";
+      if (avatarEl) avatarEl.textContent = (user.nickname || "访")[0];
+      document.getElementById("logoutBtn")?.addEventListener("click", () => { MF.logout(); });
+    })();
+
+    function getAIConfig() {
+      const raw = localStorage.getItem("moneyflow_ai_config");
+      return raw ? JSON.parse(raw) : { apiKey: "", provider: "mock", model: "gpt-3.5-turbo" };
+    }
+
+    function saveAIConfig(config) {
+      localStorage.setItem("moneyflow_ai_config", JSON.stringify(config));
+    }
+
+    function generateFinancialPrompt() {
+      const transactions = MF.getTransactions();
+      const user = MF.getUser();
+      if (transactions.length === 0) return null;
+
+      const totalIncome = MF.calcMonthIncome(transactions);
+      const totalExpense = MF.calcMonthExpense(transactions);
+      const netWorth = MF.calcNetWorth(transactions);
+      const breakdown = MF.calcCategoryBreakdown(transactions);
+      const budgetRatio = MF.calcBudgetRatio(transactions, user);
+
+      const prompt = [
+        "你现在是 MoneyFlow 的智能财务顾问，请根据以下用户的财务状况，给出简洁、实用、温暖的理财建议（中文，120字以内）：",
+        "",
+        `本月收入：¥${totalIncome.toFixed(2)}`,
+        `本月支出：¥${totalExpense.toFixed(2)}`,
+        `累计净资产：¥${netWorth.toFixed(2)}`,
+        `预算使用率：${(budgetRatio * 100).toFixed(1)}%`,
+        "",
+        "支出分类占比：",
+        ...breakdown.map((b) => `  ${b.icon} ${b.category}: ¥${b.amount.toFixed(2)} (${b.pct.toFixed(1)}%)`),
+        "",
+        "请结合这些数据提供个性化的理财建议。",
+      ].join("\n");
+
+      return prompt;
+    }
+
+        function generateMockInsight() {
+      const tx = MF.getTransactions();
+      if (tx.length === 0) return "还没有足够的收支数据来分析。开始记录你的第一笔账吧！";
+
+      const breakdown = MF.calcCategoryBreakdown(tx);
+      const monthExpense = MF.calcMonthExpense(tx);
+      const monthIncome = MF.calcMonthIncome(tx);
+      const user = MF.getUser();
+      const budgetUsage = user.budgetLimit > 0 ? (monthExpense / user.budgetLimit) * 100 : 0;
+      const topCategory = breakdown.length > 0 ? breakdown[0].category : null;
+      const topCategoryRatio = breakdown.length > 0 ? breakdown[0].pct : 0;
+      const netWorth = MF.calcNetWorth(tx);
+
+      if (budgetUsage >= 100) {
+        return `⚠️ 本月预算已超支 ${(budgetUsage - 100).toFixed(0)}%，需要立即审视开支结构，优先削减非必要消费。`;
+      }
+
+      if (budgetUsage >= 90) {
+        return `⚠️ 本月预算已使用 ${budgetUsage.toFixed(0)}%，距离预算上限已经很近。接下来建议优先考虑必要消费。`;
+      }
+
+      if (topCategory === "餐饮" && topCategoryRatio >= 40) {
+        return `🍜 本月餐饮支出占比达到 ${topCategoryRatio.toFixed(0)}%，是最大的消费来源。或许可以适当减少外卖频率。`;
+      }
+
+      if (topCategory === "购物" && topCategoryRatio >= 30) {
+        return `🛍️ 本月购物支出占比 ${topCategoryRatio.toFixed(0)}%，下单前不妨先问问自己：真的需要吗？`;
+      }
+
+      if (monthIncome > 0 && monthExpense > monthIncome) {
+        return `📉 本月支出已超过收入，建议立即审视开支结构，优先削减可选消费。`;
+      }
+
+      if (monthIncome > 0) {
+        const saveRate = ((monthIncome - monthExpense) / monthIncome * 100).toFixed(0);
+        if (saveRate > 30) {
+          return `✅ 本月储蓄率 ${saveRate}%，财务状况非常健康，继续保持！`;
+        }
+        if (saveRate > 0) {
+          return `📊 本月储蓄率 ${saveRate}%，还有提升空间，建议适当控制非必要开支。`;
+        }
+      }
+
+      return `📈 当前预算使用率为 ${budgetUsage.toFixed(0)}%，整体消费控制良好。`;
+    }
+
+    async function fetchAIInsight(prompt) {
+      const config = getAIConfig();
+
+      if (!config.apiKey || config.provider === "mock") {
+        await new Promise(r => setTimeout(r, 800 + Math.random() * 600));
+        return generateMockInsight();
+      }
+
+      const API_URL = "https://api.deepseek.com/v1/chat/completions";
+
+      try {
+        const res = await fetch(API_URL, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": "Bearer " + config.apiKey,
+          },
+          body: JSON.stringify({
+            model: config.model || "deepseek-chat",
+            messages: [
+              { role: "system", content: "你是一位专业且温暖的财务顾问，回复简洁实用，使用中文。" },
+              { role: "user", content: prompt },
+            ],
+            max_tokens: 500,
+            temperature: 0.7,
+          }),
+        });
+
+        if (!res.ok) {
+          const errText = await res.text();
+          console.warn("AI API error:", res.status, errText);
+          throw new Error("API 请求失败");
+        }
+
+        const data = await res.json();
+        return data.choices?.[0]?.message?.content?.trim() || "AI 返回了空结果，请重试。";
+      } catch (e) {
+        console.warn("AI API fallback:", e.message);
+        return generateMockInsight() + "\n\n（AI 服务暂不可用，以上为离线分析结果）";
+      }
+    }
+
+    function typewriter(el, text, speed) {
+      return new Promise((resolve) => {
+        el.innerHTML = "";
+        let i = 0;
+        const adjustedSpeed = text.length > 200 ? Math.max(speed, 20) : speed;
+
+        function tick() {
+          if (i < text.length) {
+            const char = text.charAt(i);
+            if (char === "\n") {
+              el.innerHTML += "<br>";
+            } else {
+              el.innerHTML += char;
+            }
+            i++;
+            setTimeout(tick, adjustedSpeed);
+          } else {
+            resolve();
+          }
+        }
+        tick();
+      });
+    }
+
+    async function renderAIInsight() {
+      const box = document.getElementById("aiInsightBox");
+      const timeLabel = document.getElementById("aiTimeLabel");
+      if (!box) return;
+
+      const prompt = generateFinancialPrompt();
+
+      if (!prompt) {
+        box.className = "ai-insight-box is-empty";
+        box.innerHTML = "<span>📭 还没有足够的收支数据，先去记账吧！</span>";
+        if (timeLabel) timeLabel.textContent = "暂无数据";
+        return;
+      }
+
+      box.className = "ai-insight-box is-loading";
+      box.innerHTML = '<div class="spinner"></div><span>🧠 AI 正在分析你的财务状况...</span>';
+      if (timeLabel) timeLabel.textContent = "分析中...";
+
+      try {
+        const insightText = await fetchAIInsight(prompt);
+        box.className = "ai-insight-box";
+        await typewriter(box, insightText, 30);
+
+        if (timeLabel) {
+          const now = new Date();
+          const pad = (n) => String(n).padStart(2, "0");
+          timeLabel.textContent = `${pad(now.getMonth() + 1)}-${pad(now.getDate())} ${pad(now.getHours())}:${pad(now.getMinutes())}`;
+        }
+      } catch (e) {
+        box.className = "ai-insight-box";
+        box.innerHTML = "⚠️ 分析出错了，请稍后重试。";
+        if (timeLabel) timeLabel.textContent = "分析失败";
+      }
+    }
+
+    function openSettings() {
+      const overlay = document.getElementById("apiModalOverlay");
+      const keyInput = document.getElementById("apiKeyInput");
+      const modelSelect = document.getElementById("apiModelSelect");
+      if (!overlay) return;
+
+      const config = getAIConfig();
+      if (keyInput) keyInput.value = config.apiKey || "";
+      if (modelSelect) modelSelect.value = config.model || "deepseek-chat";
+
+      overlay.classList.add("is-open");
+    }
+
+    function closeSettings() {
+      const overlay = document.getElementById("apiModalOverlay");
+      if (overlay) overlay.classList.remove("is-open");
+    }
+
+    function saveSettings() {
+      const keyInput = document.getElementById("apiKeyInput");
+      const modelSelect = document.getElementById("apiModelSelect");
+      if (!keyInput) return;
+
+      const apiKey = keyInput.value.trim();
+      const model = modelSelect ? modelSelect.value : "deepseek-chat";
+
+      saveAIConfig({
+        apiKey: apiKey,
+        provider: apiKey ? "deepseek" : "mock",
+        model: model,
+      });
+
+      closeSettings();
+      const box = document.getElementById("aiInsightBox");
+      if (box) {
+        box.className = "ai-insight-box is-empty";
+        box.innerHTML = "<span>设置已保存，重新生成分析...</span>";
+      }
+      setTimeout(renderAIInsight, 300);
+    }
+
+    function buildSettingsModal() {
+      const div = document.createElement("div");
+      div.className = "api-modal-overlay";
+      div.id = "apiModalOverlay";
+      div.innerHTML = `
+        <div class="api-modal">
+          <div class="api-modal__header">
+            <h3>⚙ AI 服务配置</h3>
+            <button class="api-modal__close" id="apiModalCloseBtn">✕</button>
+          </div>
+          <div class="field">
+            <label class="field__label">API 密钥</label>
+            <input class="field__input" id="apiKeyInput" type="password" placeholder="sk-..." autocomplete="off">
+            <p class="field__hint">留空则使用离线分析模式（无需密钥）。支持 DeepSeek API 密钥。</p>
+          </div>
+          <div class="field">
+            <label class="field__label">模型</label>
+            <select class="field__input" id="apiModelSelect" style="font-family:var(--font-sans);">
+              <option value="deepseek-chat">deepseek-chat</option>
+              <option value="gpt-3.5-turbo">gpt-3.5-turbo</option>
+              <option value="gpt-4">gpt-4</option>
+            </select>
+          </div>
+          <div class="api-modal__actions">
+            <button class="ai-btn" id="apiCancelBtn">取消</button>
+            <button class="ai-btn ai-btn--primary" id="apiSaveBtn">保存</button>
+          </div>
+        </div>
+      `;
+      document.body.appendChild(div);
+
+      document.getElementById("apiModalCloseBtn")?.addEventListener("click", closeSettings);
+      document.getElementById("apiCancelBtn")?.addEventListener("click", closeSettings);
+      document.getElementById("apiSaveBtn")?.addEventListener("click", saveSettings);
+      div.addEventListener("click", (e) => {
+        if (e.target === div) closeSettings();
+      });
+      document.getElementById("apiKeyInput")?.addEventListener("keydown", (e) => {
+        if (e.key === "Enter") saveSettings();
+      });
+    }
+
+    document.addEventListener("DOMContentLoaded", () => {
+      buildSettingsModal();
+      document.getElementById("aiRefreshBtn")?.addEventListener("click", renderAIInsight);
+      document.getElementById("aiSettingsBtn")?.addEventListener("click", openSettings);
+      setTimeout(renderAIInsight, 1200);
+    });
+
+    function buildFinancialContext() {
+      const tx = MF.getTransactions();
+      const user = MF.getUser();
+      if (tx.length === 0) return "";
+
+      const totalIncome = MF.calcMonthIncome(tx);
+      const totalExpense = MF.calcMonthExpense(tx);
+      const netWorth = MF.calcNetWorth(tx);
+      const breakdown = MF.calcCategoryBreakdown(tx);
+      const budgetRatio = MF.calcBudgetRatio(tx, user);
+
+      let ctx = `用户财务数据摘要（当前时间 ${new Date().toLocaleString("zh-CN")}）：\n`;
+      ctx += `- 本月收入：¥${totalIncome.toFixed(2)}\n`;
+      ctx += `- 本月支出：¥${totalExpense.toFixed(2)}\n`;
+      ctx += `- 累计净资产：¥${netWorth.toFixed(2)}\n`;
+      ctx += `- 预算使用率：${(budgetRatio * 100).toFixed(1)}%\n`;
+      if (breakdown.length > 0) {
+        ctx += `- 支出分类：\n`;
+        breakdown.forEach(b => {
+          ctx += `  ${b.icon} ${b.category}: ¥${b.amount.toFixed(2)} (${b.pct.toFixed(1)}%)\n`;
+        });
+      }
+      const recent = tx.slice(0, 5);
+      ctx += `- 最近 ${recent.length} 笔交易：\n`;
+      recent.forEach(t => {
+        ctx += `  ${MF.formatDateTime(t.datetime)} ${t.type === "expense" ? "支出" : "收入"} ${t.title} ¥${t.amount.toFixed(2)}\n`;
+      });
+      return ctx;
+    }
+
+        async function chatWithAI(userMessage) {
+      const config = getAIConfig();
+      const context = buildFinancialContext();
+
+      const systemPrompt = `你是 MoneyFlow 的财务助手，性格友好亲切，像朋友一样聊天。
+## 核心要求：
+- 用自然的口语化表达，像朋友闲聊，不要像报告
+- 所有财务数据必须严格基于用户真实的收支数据，不能编造
+- 回复简洁（2-4句话），但信息量要足
+- 如果用户没提到具体分类，可以主动反问引导话题
+- 如果用户问题与财务完全无关，礼貌拉回财务话题`;
+      const fullPrompt = context ? `${context}\n\n用户问题：${userMessage}` : `用户还没有足够的财务数据。用户问题：${userMessage}`;
+
+      if (!config.apiKey || config.provider === "mock") {
+        await new Promise(r => setTimeout(r, 500 + Math.random() * 800));
+        return generateMockChatReply(userMessage);
+      }
+
+      try {
+        const res = await fetch("https://api.deepseek.com/v1/chat/completions", {
+          method: "POST",
+          headers: { "Content-Type": "application/json", "Authorization": "Bearer " + config.apiKey },
+          body: JSON.stringify({
+            model: config.model || "deepseek-chat",
+            messages: [
+              { role: "system", content: systemPrompt },
+              { role: "user", content: fullPrompt },
+            ],
+            max_tokens: 600,
+            temperature: 0.85,
+          }),
+        });
+        if (!res.ok) throw new Error("API error");
+        const data = await res.json();
+        return data.choices?.[0]?.message?.content?.trim() || "emmm 我没反应过来，换句话问问？";
+      } catch (e) {
+        return generateMockChatReply(userMessage) + "\n\n（AI 服务暂不可用，以上为离线回复）";
+      }
+    }
+
+        function generateMockChatReply(question) {
+      const tx = MF.getTransactions();
+      const user = MF.getUser();
+      if (tx.length === 0) {
+        const msgs = [
+          "你还没记账呢～先去记几笔，我才能帮你分析哦！",
+          "数据还是空的，先记几笔账咱再聊？",
+          "空空如也！去记一笔收入或支出，我就能陪你聊财务啦",
+        ];
+        return msgs[Math.floor(Math.random() * msgs.length)];
+      }
+
+      const monthExpense = MF.calcMonthExpense(tx);
+      const monthIncome = MF.calcMonthIncome(tx);
+      const netWorth = MF.calcNetWorth(tx);
+      const breakdown = MF.calcCategoryBreakdown(tx);
+      const budgetRatio = MF.calcBudgetRatio(tx, user);
+      const q = question.toLowerCase();
+      const top = breakdown.length > 0 ? breakdown[0] : null;
+      const topThree = breakdown.slice(0, 3);
+
+      if (/^(你好|嗨|hi|hello|在吗|hey|哈[喽罗])\b/.test(q)) {
+        const hour = new Date().getHours();
+        const tg = hour < 6 ? "夜深了还没睡" : hour < 12 ? "早啊" : hour < 14 ? "中午好" : hour < 18 ? "下午好" : "晚上好";
+        return tg + "～我是你的财务小助手 💬 你最近的账单我都有看，想问什么尽管说～比如「我这个月钱花哪了」「餐饮吃了多少」都行！";
+      }
+
+      if (q.includes("花") || q.includes("支出") || q.includes("钱去哪") || q.includes("用了多少") || q.includes("消费")) {
+        let reply = `这个月一共花掉 ¥${monthExpense.toFixed(0)}。`;
+        if (top) {
+          reply += ` 大头在「${top.category}」上，占了 ${top.pct.toFixed(0)}%（¥${top.amount.toFixed(0)}）`;
+          if (topThree.length > 1) {
+            reply += `，其次是 ${topThree.slice(1).map(b => `${b.category}(${b.pct.toFixed(0)}%)`).join("、")}`;
+          }
+          reply += "。";
+        }
+        if (budgetRatio > 0.8) {
+          reply += ` 预算已经用了 ${(budgetRatio * 100).toFixed(0)}% 了，后面得悠着点哦～`;
+        } else {
+          reply += ` 整体预算用了 ${(budgetRatio * 100).toFixed(0)}%，还在掌控之中 👍`;
+        }
+        return reply;
+      }
+
+      if (q.includes("收") || q.includes("入") || q.includes("赚") || q.includes("工资") || q.includes("薪资")) {
+        if (monthIncome > 0) {
+          const balance = monthIncome - monthExpense;
+          const rate = monthIncome > 0 ? (balance / monthIncome * 100).toFixed(0) : 0;
+          let reply = `本月入账 ¥${monthIncome.toFixed(0)}，花了 ¥${monthExpense.toFixed(0)}，`;
+          if (balance > 0) {
+            reply += `剩 ¥${balance.toFixed(0)}，储蓄率 ${rate}%${rate > 30 ? "，挺能存啊 👏" : "，还有提升空间 💪"}。`;
+          } else {
+            reply += `赤字 ¥${Math.abs(balance).toFixed(0)}，支出大于收入了，得看看哪些可以砍一砍 📉`;
+          }
+          return reply;
+        }
+        return "目前还没记过收入呢，发工资了记得记上～";
+      }
+
+      if (q.includes("净资产") || q.includes("总资") || q.includes("身价") || q.includes("我有多少钱") || q.includes("总共")) {
+        if (netWorth >= 0) {
+          return `目前净资产 ¥${netWorth.toFixed(0)}，正资产状态，继续保持下去小金库会越来越鼓的 ✨`;
+        }
+        return `目前净资产 ¥${netWorth.toFixed(0)}，暂时是负数别担心，好好规划支出慢慢就能扳回来 💪`;
+      }
+
+      if (q.includes("预算") || q.includes("超") || q.includes("预警") || q.includes("还剩")) {
+        const pct = (budgetRatio * 100).toFixed(0);
+        let reply = `本月预算 ¥${user.budgetLimit}，`;
+        if (budgetRatio > 1) {
+          reply += `已经超了 ${((budgetRatio - 1) * 100).toFixed(0)}% 啦，接下来得省着点过 😅`;
+        } else if (pct > (user.warningThreshold || 0.8) * 100) {
+          reply += `用了 ${pct}%，超过预警线了，后面每一笔都要想想再花哦 ⚠️`;
+        } else {
+          reply += `才用 ${pct}%，预算很充裕，不过也别大手大脚哈～`;
+        }
+        return reply;
+      }
+
+      const catMap = {
+        "餐饮": ["餐","吃","外卖","饮食","早饭","午饭","晚饭","早餐","午餐","晚餐","咖啡","奶茶","美食"],
+        "交通": ["交通","地铁","公交","打车","通勤","出行","车费","加油"],
+        "购物": ["购物","买","商品","日用品","网购","快递","剁手"],
+        "娱乐": ["娱乐","电影","游戏","充值","玩","休闲","旅游"],
+        "居住": ["居住","房租","水电","物业","房贷","住"],
+        "医疗": ["医疗","医院","药","看病","体检","健康"],
+      };
+      for (const [cat, kws] of Object.entries(catMap)) {
+        if (kws.some(k => q.includes(k))) {
+          const item = breakdown.find(b => b.category === cat);
+          if (item) {
+            const tips = {
+              "餐饮": pct => pct > 40 ? "感觉外食有点多，试试自己做饭？钱包和健康都受益～" : pct > 25 ? "还算正常，不过还能再优化优化。" : "控制得很棒！",
+              "购物": pct => pct > 25 ? "买了不少东西呀，消费前先问自己真的需要吗 😄" : "购物很克制，理性消费 👍",
+              "娱乐": pct => pct > 20 ? "玩得挺嗨，适当控制娱乐预算哈～" : "娱乐支出合理，会过日子！",
+              "交通": pct => pct > 20 ? "交通开销不小，看看有没有更划算的通勤方式？" : "交通支出控制得不错～",
+            };
+            let reply = `「${cat}」花了 ¥${item.amount.toFixed(0)}，占你总支出的 ${item.pct.toFixed(0)}%。`;
+            reply += " " + (tips[cat] ? tips[cat](item.pct) : "");
+            return reply;
+          }
+          return `这个月还没记过「${cat}」的支出呢～`;
+        }
+      }
+
+      if (q.includes("记") || q.includes("记录") || q.includes("笔数") || q.includes("多少笔")) {
+        return `你一共记了 ${tx.length} 笔账，其中收入 ${tx.filter(t => t.type === "income").length} 笔，支出 ${tx.filter(t => t.type === "expense").length} 笔。坚持记录就会有收获 📝`;
+      }
+
+      if (q.includes("最近") || q.includes("最新") || q.includes("刚刚") || q.includes("上一笔")) {
+        if (tx.length > 0) {
+          const last = tx[0];
+          return `最近一笔是「${last.title}」，${last.type === "expense" ? "支出" : "收入"} ¥${last.amount.toFixed(0)}，${MF.formatDateTime(last.datetime)}。`;
+        }
+        return "还没有记录呢～";
+      }
+
+      if (q.includes("建议") || q.includes("怎么办") || q.includes("怎么省") || q.includes("怎么存") || q.includes("优化") || q.includes("改善")) {
+        const s = [];
+        if (monthExpense > monthIncome) s.push("支出已经超过收入了，优先砍掉娱乐和购物这类非必要开支。");
+        const dining = breakdown.find(b => b.category === "餐饮");
+        if (dining && dining.pct > 35) s.push(`餐饮占了 ${dining.pct.toFixed(0)}%，每周少点几次外卖就能省不少。`);
+        const shopping = breakdown.find(b => b.category === "购物");
+        if (shopping && shopping.pct > 25) s.push("购物开销不小，下单前先放购物车冷静一天。");
+        if (s.length === 0) s.push("目前各项支出都挺合理的，继续保持就好！");
+        return "给你几个小建议：" + s.join("");
+      }
+
+      if (q.includes("谢谢") || q.includes("感谢") || q.includes("好用") || q.includes("不错") || q.includes("厉害")) {
+        const thanks = ["不客气～记得坚持记账，数据越多我越能帮你分析 😊", "应该的！你的财务数据越来越丰富了，继续加油～", "有用就好！有什么财务问题随时来问我～"];
+        return thanks[Math.floor(Math.random() * thanks.length)];
+      }
+
+      if (q.includes("拜") || q.includes("再见") || q.includes("下次") || q.includes("88")) {
+        return "拜拜～下次来的时候你的账单又有新故事了 😄";
+      }
+
+      const fallbacks = [
+        `让我看看你的数据哈～本月收入 ¥${monthIncome.toFixed(0)}，支出 ¥${monthExpense.toFixed(0)}${top ? `，花最多的是「${top.category}」¥${top.amount.toFixed(0)}` : ""}。你想了解哪方面的？`,
+        `整体的财务状况：收入 ¥${monthIncome.toFixed(0)} / 支出 ¥${monthExpense.toFixed(0)} / 净资产 ¥${netWorth.toFixed(0)}。有什么想细问的随时说～`,
+        `我帮你理一下：这个月花了 ¥${monthExpense.toFixed(0)}，挣了 ¥${monthIncome.toFixed(0)}，净增 ¥${(monthIncome - monthExpense).toFixed(0)}。想深入了解哪块？比如「餐饮」「交通」「预算」都可以问我～`,
+      ];
+      return fallbacks[Math.floor(Math.random() * fallbacks.length)];
+    }
+
+    function chatTypewriter(el, text, speed) {
+      return new Promise((resolve) => {
+        el.innerHTML = "";
+        let i = 0;
+        const spd = text.length > 200 ? Math.max(speed, 15) : speed;
+        function tick() {
+          if (i < text.length) {
+            const char = text.charAt(i);
+            el.innerHTML += char === "\n" ? "<br>" : char;
+            i++;
+            setTimeout(tick, spd);
+          } else { resolve(); }
+        }
+        tick();
+      });
+    }
+
+    function addChatMessage(role, text) {
+      const window = document.getElementById("chatWindow");
+      if (!window) return;
+
+      const msgDiv = document.createElement("div");
+      msgDiv.className = "chat-msg chat-msg--" + role;
+      msgDiv.innerHTML = `
+        <div class="chat-msg__avatar">${role === "user" ? "👤" : "🤖"}</div>
+        <div class="chat-msg__bubble"></div>
+      `;
+      window.appendChild(msgDiv);
+      window.scrollTop = window.scrollHeight;
+
+      const bubble = msgDiv.querySelector(".chat-msg__bubble");
+
+      if (role === "user") {
+        bubble.textContent = text;
+        window.scrollTop = window.scrollHeight;
+        return null;
+      }
+
+      bubble.innerHTML = '<span class="cursor"></span>';
+      return chatTypewriter(bubble, text, 25).then(() => {
+        window.scrollTop = window.scrollHeight;
+      });
+    }
+
+    async function sendChatMessage() {
+      const input = document.getElementById("chatInput");
+      const sendBtn = document.getElementById("chatSendBtn");
+      if (!input || !sendBtn) return;
+      const message = input.value.trim();
+      if (!message) return;
+
+      input.value = "";
+      input.disabled = true;
+      sendBtn.disabled = true;
+
+      addChatMessage("user", message);
+      try {
+        const reply = await chatWithAI(message);
+        await addChatMessage("ai", reply);
+      } catch (e) {
+        addChatMessage("ai", "抱歉，出错了，请稍后重试。");
+      }
+
+      input.disabled = false;
+      sendBtn.disabled = false;
+      input.focus();
+    }
+
+    document.addEventListener("DOMContentLoaded", () => {
+      const sendBtn = document.getElementById("chatSendBtn");
+      const input = document.getElementById("chatInput");
+      if (sendBtn) sendBtn.addEventListener("click", sendChatMessage);
+      if (input) {
+        input.addEventListener("keydown", (e) => {
+          if (e.key === "Enter" && !e.shiftKey) {
+            e.preventDefault();
+            sendChatMessage();
+          }
+        });
+      }
+    });
+
+  })();
+  </script>
+</body>
+</html>

@@ -1,0 +1,898 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>注册 · MoneyFlow</title>
+  <link rel="stylesheet" href="css/style.css">
+  <style>
+    .register-body {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: linear-gradient(135deg, #0F172A 0%, #1E293B 50%, #0F172A 100%);
+      padding: 24px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .register-body::before {
+      content: '';
+      position: absolute;
+      top: -20%;
+      right: -10%;
+      width: 500px;
+      height: 500px;
+      background: radial-gradient(circle, rgba(16, 185, 129, 0.12), transparent 60%);
+      pointer-events: none;
+    }
+
+    .register-body::after {
+      content: '';
+      position: absolute;
+      bottom: -15%;
+      left: -8%;
+      width: 400px;
+      height: 400px;
+      background: radial-gradient(circle, rgba(37, 99, 235, 0.08), transparent 60%);
+      pointer-events: none;
+    }
+
+    .register-container {
+      display: flex;
+      width: 100%;
+      max-width: 920px;
+      min-height: 580px;
+      border-radius: 24px;
+      overflow: hidden;
+      box-shadow: 0 40px 100px -20px rgba(0, 0, 0, 0.5);
+      position: relative;
+      z-index: 1;
+      animation: reg-enter 0.6s cubic-bezier(0.22, 0.9, 0.3, 1);
+    }
+
+    @keyframes reg-enter {
+      from { opacity: 0; transform: translateY(24px) scale(0.98); }
+      to { opacity: 1; transform: translateY(0) scale(1); }
+    }
+
+    .register-brand {
+      width: 40%;
+      background: linear-gradient(150deg, #059669 0%, #047857 50%, #065F46 100%);
+      padding: 48px 36px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .register-brand::before {
+      content: '';
+      position: absolute;
+      top: -80px;
+      right: -80px;
+      width: 240px;
+      height: 240px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(255,255,255,0.06), transparent 60%);
+    }
+
+    .register-brand::after {
+      content: '';
+      position: absolute;
+      bottom: -60px;
+      left: -60px;
+      width: 180px;
+      height: 180px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(37, 99, 235, 0.08), transparent 60%);
+    }
+
+    .register-brand__top { position: relative; z-index: 1; }
+
+    .register-brand__logo {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-family: var(--font-sans);
+      font-weight: 800;
+      font-size: 22px;
+      color: #fff;
+      margin-bottom: 48px;
+    }
+
+    .register-brand__logo-icon {
+      width: 36px;
+      height: 36px;
+      background: rgba(255,255,255,0.15);
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
+    }
+
+    .register-brand__tagline {
+      color: rgba(255,255,255,0.9);
+      font-family: var(--font-sans);
+      font-size: 28px;
+      font-weight: 800;
+      line-height: 1.3;
+      margin-bottom: 12px;
+    }
+
+    .register-brand__desc {
+      color: rgba(255,255,255,0.55);
+      font-size: 14px;
+      line-height: 1.7;
+      max-width: 280px;
+    }
+
+    .register-brand__feature {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-top: 32px;
+      position: relative;
+      z-index: 1;
+    }
+
+    .register-brand__feature-icon {
+      width: 40px;
+      height: 40px;
+      border-radius: 12px;
+      background: rgba(255,255,255,0.08);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
+      flex-shrink: 0;
+    }
+
+    .register-brand__feature-text {
+      color: rgba(255,255,255,0.6);
+      font-size: 13px;
+      line-height: 1.5;
+    }
+
+    .register-brand__feature-text strong {
+      color: rgba(255,255,255,0.85);
+      display: block;
+      font-size: 14px;
+      margin-bottom: 2px;
+    }
+
+    .register-brand__bottom { position: relative; z-index: 1; }
+
+    .register-brand__testimonial {
+      color: rgba(255,255,255,0.4);
+      font-size: 12px;
+      line-height: 1.6;
+      border-left: 2px solid rgba(255,255,255,0.15);
+      padding-left: 16px;
+    }
+
+    .register-form-area {
+      width: 60%;
+      background: #fff;
+      padding: 48px 44px;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .register-form-area__header { margin-bottom: 32px; }
+
+    .register-form-area__title {
+      font-size: 22px;
+      font-weight: 800;
+      color: var(--text-primary);
+      margin-bottom: 6px;
+    }
+
+    .register-form-area__sub {
+      font-size: 14px;
+      color: var(--text-secondary);
+    }
+
+    .reg-steps {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 32px;
+    }
+
+    .reg-steps__item {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text-secondary);
+      transition: color var(--transition-base);
+    }
+
+    .reg-steps__dot {
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      border: 2px solid var(--border-color);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--text-secondary);
+      transition: all var(--transition-base);
+      flex-shrink: 0;
+    }
+
+    .reg-steps__line {
+      width: 24px;
+      height: 2px;
+      background: var(--border-color);
+      border-radius: 1px;
+      flex-shrink: 0;
+      transition: background var(--transition-base);
+    }
+
+    .reg-steps__item.is-active .reg-steps__dot {
+      border-color: var(--color-primary);
+      background: var(--color-primary);
+      color: #fff;
+      box-shadow: 0 2px 8px rgba(47, 111, 78, 0.3);
+    }
+
+    .reg-steps__item.is-active { color: var(--text-primary); }
+
+    .reg-steps__item.is-done .reg-steps__dot {
+      border-color: var(--color-success);
+      background: var(--color-success);
+      color: #fff;
+    }
+
+    .reg-steps__item.is-done { color: var(--color-success); }
+
+    .reg-steps__item.is-done + .reg-steps__line,
+    .reg-steps__item.is-active + .reg-steps__line {
+      background: var(--color-primary);
+    }
+
+    .step-panel {
+      animation: step-slide 0.35s cubic-bezier(0.22, 0.9, 0.3, 1);
+    }
+
+    @keyframes step-slide {
+      from { opacity: 0; transform: translateX(16px); }
+      to { opacity: 1; transform: translateX(0); }
+    }
+
+    .step-panel h2 {
+      font-size: 18px;
+      margin-bottom: 20px;
+    }
+
+    .reg-field { margin-bottom: 20px; }
+
+    .reg-field label {
+      display: block;
+      font-size: 13px;
+      font-weight: 600;
+      margin-bottom: 6px;
+      color: var(--text-primary);
+    }
+
+    .reg-field input,
+    .reg-field select {
+      width: 100%;
+      padding: 14px 16px;
+      border: 1.5px solid var(--border-color);
+      border-radius: 12px;
+      background: var(--color-background);
+      color: var(--text-primary);
+      font-size: 15px;
+      transition: all var(--transition-fast);
+      box-sizing: border-box;
+    }
+
+    .reg-field input:focus,
+    .reg-field select:focus {
+      border-color: var(--color-primary);
+      background: #fff;
+      outline: none;
+      box-shadow: 0 0 0 4px rgba(47, 111, 78, 0.1);
+    }
+
+    .reg-field input.is-invalid {
+      border-color: var(--color-danger);
+      box-shadow: 0 0 0 4px rgba(229, 83, 61, 0.1);
+    }
+
+    .reg-field__error {
+      display: none;
+      margin-top: 6px;
+      font-size: 12px;
+      color: var(--color-danger);
+    }
+
+    .reg-field.has-error .reg-field__error { display: block; }
+
+    .reg-btn-group {
+      display: flex;
+      gap: 12px;
+      margin-top: 28px;
+    }
+
+    .reg-btn-group .btn {
+      flex: 1;
+      padding: 14px 24px;
+      border-radius: 12px;
+      font-size: 14px;
+    }
+
+    .account-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+
+    .account-card {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 16px;
+      border: 1.5px solid var(--border-color);
+      border-radius: 14px;
+      cursor: pointer;
+      transition: all var(--transition-base);
+      position: relative;
+    }
+
+    .account-card:hover {
+      border-color: var(--color-primary);
+      background: var(--color-primary-light);
+    }
+
+    .account-card input {
+      position: absolute;
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    .account-card__check {
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      border: 2px solid var(--border-color);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 11px;
+      color: transparent;
+      transition: all var(--transition-fast);
+      flex-shrink: 0;
+    }
+
+    .account-card input:checked ~ .account-card__check {
+      background: var(--color-primary);
+      border-color: var(--color-primary);
+      color: #fff;
+    }
+
+    .account-card:has(input:checked) {
+      border-color: var(--color-primary);
+      background: var(--color-primary-light);
+    }
+
+    .account-card__icon { font-size: 20px; }
+    .account-card__name { font-weight: 600; font-size: 14px; }
+
+    .reg-radio-group { display: flex; gap: 10px; }
+
+    .reg-radio-option { flex: 1; position: relative; }
+
+    .reg-radio-option input { position: absolute; opacity: 0; }
+
+    .reg-radio-option label {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 4px;
+      padding: 14px 8px;
+      border: 1.5px solid var(--border-color);
+      border-radius: 12px;
+      text-align: center;
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--text-secondary);
+      cursor: pointer;
+      transition: all var(--transition-fast);
+    }
+
+    .reg-radio-option label small {
+      font-weight: 400;
+      font-size: 11px;
+      color: var(--text-secondary);
+    }
+
+    .reg-radio-option input:checked + label {
+      border-color: var(--color-primary);
+      background: var(--color-primary-light);
+      color: var(--color-primary);
+      box-shadow: 0 2px 8px rgba(47, 111, 78, 0.12);
+    }
+
+    .register-body + .toast-container { z-index: 9999; }
+
+    .auth-tabs {
+      display: flex;
+      gap: 12px;
+      margin-bottom: 12px;
+      border-bottom: 2px solid var(--border-color);
+      padding-bottom: 0;
+    }
+
+    .auth-tab {
+      background: none;
+      border: none;
+      font-size: 20px;
+      font-weight: 800;
+      color: var(--text-muted);
+      padding: 0 0 10px 0;
+      cursor: pointer;
+      transition: color 0.2s, border-color 0.2s;
+      border-bottom: 3px solid transparent;
+      margin-bottom: -2px;
+    }
+
+    .auth-tab.is-active {
+      color: var(--text-primary);
+      border-bottom-color: var(--color-primary);
+    }
+
+    .auth-form {
+      animation: auth-fade-in 0.3s cubic-bezier(0.22, 0.9, 0.3, 1);
+    }
+
+    @keyframes auth-fade-in {
+      from { opacity: 0; transform: translateY(8px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    @media (max-width: 768px) {
+      .register-container { flex-direction: column; max-width: 460px; }
+      .register-brand { width: 100%; padding: 32px 28px; min-height: auto; }
+      .register-brand__tagline { font-size: 22px; }
+      .register-form-area { width: 100%; padding: 32px 24px; }
+      .account-grid { grid-template-columns: 1fr; }
+      .reg-radio-group { flex-direction: column; }
+      .register-brand__feature { margin-top: 20px; }
+      .register-brand__logo { margin-bottom: 28px; }
+    }
+
+    @media (max-width: 480px) {
+      .register-body { padding: 12px; }
+      .register-form-area { padding: 24px 18px; }
+      .reg-steps { gap: 4px; }
+      .reg-steps__line { width: 16px; }
+      .reg-btn-group { flex-direction: column; }
+    }
+  </style>
+</head>
+<body data-page="register">
+
+  <div class="register-body">
+
+    <div class="register-container">
+
+      <div class="register-brand">
+        <div class="register-brand__top">
+          <div class="register-brand__logo">
+            <span class="register-brand__logo-icon">💰</span>
+            MoneyFlow
+          </div>
+          <div class="register-brand__tagline">钱流记</div>
+          <p class="register-brand__desc">帮你轻松追踪每一笔收支，智能分析消费结构，让理财变得简单。</p>
+          <div class="register-brand__feature">
+            <span class="register-brand__feature-icon">📊</span>
+            <span class="register-brand__feature-text">
+              <strong>智能数据分析</strong>
+              AI 统计收支分布，梳理消费行为
+            </span>
+          </div>
+          <div class="register-brand__feature">
+            <span class="register-brand__feature-icon">🎯</span>
+            <span class="register-brand__feature-text">
+              <strong>预算管控工具</strong>
+              可视化额度提醒，控制超额支出
+            </span>
+          </div>
+        </div>
+        <div class="register-brand__bottom">
+          <div class="register-brand__testimonial">made by 钉子</div>
+        </div>
+      </div>
+
+      <div class="register-form-area">
+
+        <div class="register-form-area__header">
+          <div class="auth-tabs">
+            <button class="auth-tab is-active" id="tabLogin">登录</button>
+            <button class="auth-tab" id="tabRegister">创建账户</button>
+          </div>
+          <p class="register-form-area__sub" id="authSubtitle">欢迎回来，登录你的账户</p>
+        </div>
+
+        <div class="reg-steps" id="stepsIndicator">
+          <div class="reg-steps__item is-active" data-step="1">
+            <span class="reg-steps__dot">1</span> 资料
+          </div>
+          <div class="reg-steps__line"></div>
+          <div class="reg-steps__item" data-step="2">
+            <span class="reg-steps__dot">2</span> 账户
+          </div>
+          <div class="reg-steps__line"></div>
+          <div class="reg-steps__item" data-step="3">
+            <span class="reg-steps__dot">3</span> 预算
+          </div>
+          <div class="reg-steps__line"></div>
+          <div class="reg-steps__item" data-step="4">
+            <span class="reg-steps__dot">4</span> 安全
+          </div>
+        </div>
+
+        <form id="registerForm" class="auth-form" novalidate style="flex:1;flex-direction:column;">
+
+          <div class="step-panel" data-step="1">
+            <h2>关于你</h2>
+            <div class="reg-field">
+              <label for="regNickname">昵称</label>
+              <input id="regNickname" type="text" placeholder="你希望我们怎么称呼你？" required autofocus>
+            </div>
+            <div class="reg-field">
+              <label for="regEmail">电子邮箱</label>
+              <input id="regEmail" type="email" placeholder="test@example.com" required>
+              <div class="reg-field__error">请输入有效的邮箱地址</div>
+            </div>
+            <div class="reg-btn-group" style="margin-top:auto;">
+              <button type="button" class="btn btn--primary step-next" style="flex:1;">下一步 →</button>
+            </div>
+          </div>
+
+          <div class="step-panel" data-step="2" style="display:none;">
+            <h2>选择你的账户</h2>
+            <p class="register-form-area__sub" style="margin-bottom:16px;">选择你常用的支付账户</p>
+            <div id="accountCheckboxes" class="account-grid"><!-- JS --></div>
+            <div class="reg-btn-group" style="margin-top:auto;">
+              <button type="button" class="btn btn--ghost step-prev">← 上一步</button>
+              <button type="button" class="btn btn--primary step-next">下一步 →</button>
+            </div>
+          </div>
+
+          <div class="step-panel" data-step="3" style="display:none;">
+            <h2>设定预算</h2>
+            <p class="register-form-area__sub" style="margin-bottom:16px;">随时可以在设置中调整</p>
+            <div class="reg-field">
+              <label for="regBudget">每月预算上限</label>
+              <input id="regBudget" type="number" min="500" step="100" value="3000" placeholder="3000">
+            </div>
+            <div class="reg-field">
+              <label>预警阈值</label>
+              <div class="reg-radio-group">
+                <div class="reg-radio-option">
+                  <input type="radio" name="regThreshold" id="th60" value="0.6">
+                  <label for="th60">60%<small>保守型</small></label>
+                </div>
+                <div class="reg-radio-option">
+                  <input type="radio" name="regThreshold" id="th80" value="0.8" checked>
+                  <label for="th80">80%<small>推荐</small></label>
+                </div>
+                <div class="reg-radio-option">
+                  <input type="radio" name="regThreshold" id="th90" value="0.9">
+                  <label for="th90">90%<small>宽松型</small></label>
+                </div>
+              </div>
+            </div>
+            <div class="reg-btn-group" style="margin-top:auto;">
+              <button type="button" class="btn btn--ghost step-prev">← 上一步</button>
+              <button type="button" class="btn btn--primary step-next">下一步 →</button>
+            </div>
+          </div>
+
+          <div class="step-panel" data-step="4" style="display:none;">
+            <h2>设置密码</h2>
+            <p class="register-form-area__sub" style="margin-bottom:16px;">至少 8 位，包含字母和数字</p>
+            <div class="reg-field">
+              <label for="regPassword">密码</label>
+              <input id="regPassword" type="password" placeholder="输入你的密码" required minlength="8">
+              <div class="pwd-meter" id="pwdMeter" style="margin-top:10px;">
+                <div class="pwd-meter__bar"></div>
+                <div class="pwd-meter__bar"></div>
+                <div class="pwd-meter__bar"></div>
+                <div class="pwd-meter__bar"></div>
+              </div>
+              <div class="pwd-meter__label" id="pwdLabel" style="margin-top:6px;">请输入密码</div>
+            </div>
+            <div class="agreement" style="margin:16px 0 0;">
+              <input type="checkbox" id="regAgree" required>
+              <label for="regAgree">我已阅读并同意 <a href="#">服务条款</a> 和 <a href="#">隐私政策</a></label>
+            </div>
+            <div class="reg-btn-group" style="margin-top:auto;">
+              <button type="button" class="btn btn--ghost step-prev">← 上一步</button>
+              <button type="submit" class="btn btn--primary" id="regSubmit" disabled>开始记账</button>
+            </div>
+          </div>
+
+        </form>
+
+        <form id="loginForm" class="auth-form" style="flex:1;flex-direction:column;">
+          <h2 style="margin-bottom:20px;">欢迎回来</h2>
+          <div class="reg-field">
+            <label for="loginEmail">电子邮箱</label>
+            <input id="loginEmail" type="email" placeholder="请输入注册邮箱" required>
+          </div>
+          <div class="reg-field">
+            <label for="loginPassword">密码</label>
+            <input id="loginPassword" type="password" placeholder="输入密码" required>
+          </div>
+          <div class="reg-btn-group" style="margin-top:auto;">
+            <button type="submit" class="btn btn--primary" style="flex:1;">登录</button>
+          </div>
+          <button type="button" class="btn btn--ghost" id="testAccountBtn" style="width:100%;margin-top:10px;font-size:13px;">
+            🧪 测试账户快速登录
+          </button>
+          <p style="text-align:center;margin-top:16px;font-size:13px;color:var(--text-secondary);">
+            还没有账户？<a href="#" id="switchToRegister" style="color:var(--status-income);font-weight:600;">创建新账户</a>
+          </p>
+        </form>
+
+      </div>
+    </div>
+  </div>
+
+  <script src="js/common.js"></script>
+  <script>
+  (function () {
+    "use strict";
+
+    if (MF.isLoggedIn()) {
+      window.location.href = "dashboard.html";
+      return;
+    }
+
+    let currentMode = "login";
+
+    const tabRegister = document.getElementById("tabRegister");
+    const tabLogin = document.getElementById("tabLogin");
+    const registerForm = document.getElementById("registerForm");
+    const loginForm = document.getElementById("loginForm");
+    const stepsIndicator = document.getElementById("stepsIndicator");
+    const authSubtitle = document.getElementById("authSubtitle");
+    const switchToRegister = document.getElementById("switchToRegister");
+
+    function setMode(mode) {
+      currentMode = mode;
+      tabLogin.classList.toggle("is-active", mode === "login");
+      tabRegister.classList.toggle("is-active", mode === "register");
+
+      if (mode === "register") {
+        loginForm.style.display = "none";
+        registerForm.style.display = "flex";
+        stepsIndicator.style.display = "flex";
+        authSubtitle.textContent = "只需几步，开启你的理财之旅";
+        goToStep(1);
+        document.getElementById("loginEmail").value = "";
+        document.getElementById("loginPassword").value = "";
+      } else {
+        registerForm.style.display = "none";
+        stepsIndicator.style.display = "none";
+        loginForm.style.display = "flex";
+        authSubtitle.textContent = "欢迎回来，登录你的账户";
+        document.getElementById("regNickname").value = "";
+        document.getElementById("regEmail").value = "";
+        document.getElementById("regPassword").value = "";
+        document.getElementById("regAgree").checked = false;
+        document.getElementById("regSubmit").disabled = true;
+        document.getElementById("pwdLabel").textContent = "请输入密码";
+        document.getElementById("pwdMeter").className = "pwd-meter";
+      }
+    }
+
+    tabRegister.addEventListener("click", () => setMode("register"));
+    tabLogin.addEventListener("click", () => setMode("login"));
+    switchToRegister.addEventListener("click", (e) => {
+      e.preventDefault();
+      setMode("register");
+    });
+
+    let currentStep = 1;
+    const panels = document.querySelectorAll(".step-panel");
+    const steps = document.querySelectorAll(".reg-steps__item");
+    const nextBtns = document.querySelectorAll(".step-next");
+    const prevBtns = document.querySelectorAll(".step-prev");
+
+    function goToStep(step) {
+      currentStep = step;
+      panels.forEach((p) => {
+        const num = parseInt(p.dataset.step);
+        if (num === step) {
+          p.style.display = "flex";
+          p.style.flexDirection = "column";
+          p.style.flex = "1";
+          p.style.animation = "none";
+          p.offsetHeight;
+          p.style.animation = "step-slide 0.35s cubic-bezier(0.22, 0.9, 0.3, 1)";
+        } else {
+          p.style.display = "none";
+        }
+      });
+      steps.forEach((s) => {
+        const num = parseInt(s.dataset.step);
+        s.classList.remove("is-active", "is-done");
+        if (num === step) s.classList.add("is-active");
+        else if (num < step) s.classList.add("is-done");
+      });
+    }
+
+    function validateStep(step) {
+      if (step === 1) {
+        const nickname = document.getElementById("regNickname").value.trim();
+        const email = document.getElementById("regEmail").value.trim();
+        const emailValid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+        const field = document.getElementById("regEmail").closest(".reg-field");
+        if (!nickname) { MF.showToast("请输入昵称", "error"); return false; }
+        if (!email || !emailValid) {
+          field.classList.add("has-error");
+          MF.showToast("请输入有效的邮箱地址", "error");
+          return false;
+        }
+        field.classList.remove("has-error");
+        return true;
+      }
+      if (step === 2) {
+        const checked = document.querySelectorAll("#accountCheckboxes input:checked");
+        if (checked.length === 0) { MF.showToast("请至少选择一个账户", "error"); return false; }
+        return true;
+      }
+      if (step === 3) {
+        const budget = parseFloat(document.getElementById("regBudget").value);
+        if (!budget || budget < 500) { MF.showToast("预算至少为 ¥500", "error"); return false; }
+        return true;
+      }
+      if (step === 4) {
+        const pwd = document.getElementById("regPassword").value;
+        if (pwd.length < 8) { MF.showToast("密码至少 8 位", "error"); return false; }
+        return true;
+      }
+      return true;
+    }
+
+    nextBtns.forEach((btn) => {
+      btn.addEventListener("click", () => {
+        if (currentMode !== "register") return;
+        if (validateStep(currentStep) && currentStep < 4) goToStep(currentStep + 1);
+      });
+    });
+
+    prevBtns.forEach((btn) => {
+      btn.addEventListener("click", () => {
+        if (currentMode !== "register") return;
+        if (currentStep > 1) goToStep(currentStep - 1);
+      });
+    });
+
+    document.getElementById("regEmail").addEventListener("blur", function () {
+      const valid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(this.value.trim());
+      const field = this.closest(".reg-field");
+      if (!valid && this.value.trim()) field.classList.add("has-error");
+      else field.classList.remove("has-error");
+    });
+
+    function renderAccounts() {
+      const container = document.getElementById("accountCheckboxes");
+      container.innerHTML = MF.DEFAULT_ACCOUNTS
+        .map((acc) => `
+          <label class="account-card">
+            <input type="checkbox" value="${acc.id}" checked>
+            <span class="account-card__check">✓</span>
+            <span class="account-card__icon">${acc.icon}</span>
+            <span class="account-card__name">${acc.name}</span>
+          </label>
+        `).join("");
+    }
+    renderAccounts();
+
+    const pwdInput = document.getElementById("regPassword");
+    const pwdMeter = document.getElementById("pwdMeter");
+    const pwdLabel = document.getElementById("pwdLabel");
+
+    pwdInput.addEventListener("input", () => {
+      const pwd = pwdInput.value;
+      let score = 0;
+      if (pwd.length >= 8) score++;
+      if (/[a-z]/.test(pwd) && /[A-Z]/.test(pwd)) score++;
+      if (/\d/.test(pwd)) score++;
+      if (/[^A-Za-z0-9]/.test(pwd)) score++;
+      pwdMeter.className = "pwd-meter";
+      const labels = ["", "弱", "中等", "强", "非常强"];
+      const classes = ["", "is-weak", "is-medium", "is-strong", "is-strong"];
+      if (pwd.length === 0) pwdLabel.textContent = "请输入密码";
+      else {
+        pwdMeter.classList.add(classes[score] || "");
+        pwdLabel.textContent = labels[score] ? `密码强度：${labels[score]}` : "";
+      }
+    });
+
+    const agreeCheck = document.getElementById("regAgree");
+    const submitBtn = document.getElementById("regSubmit");
+    agreeCheck.addEventListener("change", () => { submitBtn.disabled = !agreeCheck.checked; });
+
+    registerForm.addEventListener("submit", (e) => {
+      e.preventDefault();
+      if (currentMode !== "register") return;
+      if (!validateStep(currentStep)) return;
+
+      const nickname = document.getElementById("regNickname").value.trim();
+      const email = document.getElementById("regEmail").value.trim();
+      const password = document.getElementById("regPassword").value;
+      const checkedAccounts = document.querySelectorAll("#accountCheckboxes input:checked");
+      const accounts = MF.DEFAULT_ACCOUNTS.filter((acc) =>
+        Array.from(checkedAccounts).some((c) => c.value === acc.id)
+      );
+      const budget = parseFloat(document.getElementById("regBudget").value);
+      const thresholdEl = document.querySelector('input[name="regThreshold"]:checked');
+
+      const ok = MF.registerUser(email, password, nickname);
+      if (!ok) {
+        MF.showToast("该邮箱已被注册", "error");
+        return;
+      }
+
+      MF.saveAccounts(accounts);
+      MF.saveUser({
+        ...MF.getUser(),
+        budgetLimit: budget,
+        warningThreshold: thresholdEl ? parseFloat(thresholdEl.value) : 0.8,
+      });
+
+      window.location.href = "dashboard.html";
+    });
+
+    loginForm.addEventListener("submit", (e) => {
+      e.preventDefault();
+      const email = document.getElementById("loginEmail").value.trim();
+      const password = document.getElementById("loginPassword").value;
+
+      if (!email || !password) {
+        MF.showToast("请输入邮箱和密码", "error");
+        return;
+      }
+
+      const ok = MF.loginUser(email, password);
+      if (!ok) {
+        MF.showToast("邮箱或密码错误", "error");
+        return;
+      }
+
+      window.location.href = "dashboard.html";
+    });
+
+    document.getElementById("testAccountBtn").addEventListener("click", function () {
+      var email = "123@qq.com";
+      var password = "123456789";
+      if (!MF.loginUser(email, password)) {
+        MF.registerUser(email, password, "测试用户");
+      }
+      MF.loginUser(email, password);
+      window.location.href = "dashboard.html";
+    });
+
+    registerForm.style.display = "none";
+    stepsIndicator.style.display = "none";
+    loginForm.style.display = "flex";
+    setMode("login");
+  })();
+  </script>
+</body>
+</html>

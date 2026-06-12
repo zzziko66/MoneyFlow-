@@ -1,0 +1,439 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>账单 · MoneyFlow</title>
+  <link rel="stylesheet" href="css/style.css">
+  <style>
+    .page-header { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: var(--space-3); }
+    .page-header__actions { display: flex; gap: var(--space-3); }
+
+    .summary-bar { display: flex; gap: var(--space-8); flex-wrap: wrap; }
+    .summary-bar__item { display: flex; flex-direction: column; gap: 2px; }
+    .summary-bar__label { font-size: 11px; color: var(--text-secondary); font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; }
+    .summary-bar__value { font-size: 22px; }
+
+    .tx-count { text-align: center; padding: var(--space-4); font-size: 13px; color: var(--text-secondary); }
+
+    .tx-list { gap: var(--space-2); }
+    .tx-item { transition: all var(--transition-base); }
+    .tx-item:hover {
+      border-color: var(--border-color);
+      transform: translateX(4px);
+      box-shadow: 0 4px 16px -6px rgba(0, 0, 0, 0.06);
+    }
+
+    .pill-group { margin-bottom: var(--space-1); }
+    .pill { transition: all var(--transition-base); }
+    .pill:hover { transform: translateY(-1px); }
+
+    .summary-bar__item + .summary-bar__item { position: relative; }
+    .summary-bar__item + .summary-bar__item::before {
+      content: '';
+      position: absolute;
+      left: calc(var(--space-8) / -2);
+      top: 10%;
+      bottom: 10%;
+      width: 1px;
+      background: var(--border-color);
+    }
+
+    .topbar { animation: fade-in-up 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) both; }
+    .main > .card { animation: fade-in-up 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) both; animation-delay: 0.1s; }
+    .pill-group { animation: fade-in-up 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) both; animation-delay: 0.2s; }
+    .tx-list { animation: fade-in-up 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) both; animation-delay: 0.3s; }
+    .tx-count { animation: fade-in-up 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) both; animation-delay: 0.35s; }
+
+    .daily-receipt {
+      background: #FFFFFF !important;
+      color: #000000 !important;
+      width: 330px;
+      padding: 32px 24px;
+      font-family: 'Courier New', Courier, monospace;
+      position: relative;
+      box-sizing: border-box;
+      box-shadow: 0 16px 32px rgba(0, 0, 0, 0.08) !important;
+      margin: 0 auto;
+    }
+    .daily-receipt::before,
+    .daily-receipt::after {
+      content: "";
+      position: absolute;
+      left: 0; right: 0;
+      height: 6px;
+      background-size: 8px 6px;
+      pointer-events: none;
+    }
+    .daily-receipt::before {
+      top: -6px;
+      background-image: linear-gradient(-45deg, transparent 3px, transparent 0),
+                        linear-gradient(45deg, transparent 3px, transparent 0);
+    }
+    .daily-receipt::after {
+      bottom: -6px;
+      background-image: linear-gradient(-45deg, transparent 3px, transparent 0),
+                        linear-gradient(45deg, transparent 3px, transparent 0);
+    }
+    .receipt-divider {
+      border-top: 1px dashed #000000 !important;
+      margin: 14px 0;
+      width: 100%;
+      opacity: 0.8;
+    }
+    #receiptItemsContainer,
+    #receiptItemsContainer *,
+    .daily-receipt span,
+    .daily-receipt div {
+      color: #000000 !important;
+    }
+    .receipt-header { text-align: center; margin-bottom: 12px; }
+    .receipt-header h2 {
+      font-size: 20px;
+      margin: 0 0 4px;
+      color: #000 !important;
+      font-family: inherit;
+    }
+    .receipt-header p { font-size: 12px; margin: 0; color: #555 !important; }
+    .receipt-item { display: flex; justify-content: space-between; align-items: center; padding: 4px 0; font-size: 12px; }
+    .receipt-item__left { flex: 1; }
+    .receipt-item__title { font-weight: bold; }
+    .receipt-item__meta { font-size: 10px; color: #666 !important; }
+    .receipt-item__amount { text-align: right; white-space: nowrap; margin-left: 12px; }
+    .receipt-summary { text-align: right; font-size: 12px; line-height: 1.6; }
+    .receipt-summary strong { font-size: 14px; }
+    .receipt-footer { text-align: center; font-size: 11px; color: #888 !important; margin-top: 12px; }
+    .receipt-actions { display: flex; gap: 10px; justify-content: center; margin-top: 20px; }
+    .receipt-actions .btn { min-width: 100px; }
+    .receipt-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.4);
+      z-index: 1000;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      overflow-y: auto;
+      padding: 40px 16px;
+    }
+    .receipt-overlay.is-open { display: flex; }
+    .receipt-wrap { position: relative; }
+  </style>
+</head>
+<body data-page="transactions">
+
+  <div class="app-shell">
+
+    <aside class="sidebar">
+      <div class="sidebar__brand">
+        <span class="sidebar__brand-mark">💰</span>
+        MoneyFlow
+      </div>
+      <nav class="sidebar__nav">
+        <a href="dashboard.html" class="sidebar__link" data-page="dashboard">
+          <span class="sidebar__icon">📊</span> 财富视图
+        </a>
+        <a href="transactions.html" class="sidebar__link" data-page="transactions">
+          <span class="sidebar__icon">📜</span> 账单
+        </a>
+        <a href="insights.html" class="sidebar__link" data-page="insights">
+          <span class="sidebar__icon">💡</span> AI顾问
+        </a>
+      </nav>
+      <div class="sidebar__footer">
+        <div class="sidebar__user-wrap">
+          <div class="sidebar__user" id="sidebarUserBtn">
+            <div class="sidebar__avatar" id="sidebarAvatar">访</div>
+            <div>
+              <div class="sidebar__user-name" id="sidebarName">访客</div>
+              <div id="userTagline">MoneyFlow 用户</div>
+            </div>
+          </div>
+          <div class="sidebar__user-dropdown">
+            <button class="dropdown__item" id="editProfileBtn">⚙️ 修改账户</button>
+            <div class="sidebar-theme-divider"></div>
+            <button class="dropdown__item" id="themeSwitchBtn">🎨 切换主题</button>
+            <button class="dropdown__item dropdown__item--danger" id="logoutBtn">⏻ 退出登录</button>
+          </div>
+        </div>
+      </div>
+    </aside>
+
+    <main class="main">
+
+      <div class="topbar">
+        <div class="topbar__greeting">
+          <h1>📜 账单</h1>
+          <p class="topbar__date">查看和管理你的所有收支记录</p>
+        </div>
+        <div class="clock" id="clock-time">00:00:00</div>
+      </div>
+
+      <div style="display:flex;justify-content:flex-end;margin-bottom:16px;">
+        <button class="btn btn--primary" id="printReceiptBtn">🖨️ 打印今日账单</button>
+      </div>
+
+      <div class="card" style="padding:var(--space-5) var(--space-6);">
+        <div class="summary-bar" id="summaryBar">
+          <div class="summary-bar__item">
+            <span class="summary-bar__label">总收入</span>
+            <span class="amount summary-bar__value amount--income" id="txTotalIncome">+¥0.00</span>
+          </div>
+          <div class="summary-bar__item">
+            <span class="summary-bar__label">总支出</span>
+            <span class="amount summary-bar__value amount--expense" id="txTotalExpense">-¥0.00</span>
+          </div>
+          <div class="summary-bar__item">
+            <span class="summary-bar__label">笔数</span>
+            <span class="amount summary-bar__value" id="txTotalCount" style="color:var(--text-primary);">0</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="pill-group" id="filterGroup">
+        <button class="pill is-active" data-filter="all">全部</button>
+        <button class="pill" data-filter="expense">支出</button>
+        <button class="pill" data-filter="income">收入</button>
+      </div>
+
+      <div class="tx-list" id="txList"><!-- JS --></div>
+      <div class="tx-count" id="txCount">共 0 条记录</div>
+
+    </main>
+  </div>
+
+  <div class="receipt-overlay" id="receiptOverlay">
+    <div class="receipt-wrap" id="captureArea">
+      <div class="daily-receipt" id="receiptPaper">
+        <div class="receipt-header">
+          <h2>💰 钱流记</h2>
+          <p id="receiptDate">----年--月--日</p>
+        </div>
+        <div class="receipt-divider"></div>
+        <div id="receiptItemsContainer"><!-- items injected by JS --></div>
+        <div class="receipt-divider"></div>
+        <div class="receipt-summary" id="receiptSummary"></div>
+        <div class="receipt-footer">made by 钉子</div>
+      </div>
+      <div class="receipt-actions">
+        <button class="btn btn--secondary" id="downloadReceiptBtn">⬇ 下载小票</button>
+        <button class="btn" id="closeReceiptBtn">关闭</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="js/common.js"></script>
+  <script>if (!MF.isLoggedIn()) window.location.replace("index.html");</script>
+  <script>
+  (function () {
+    "use strict";
+
+    let currentFilter = "all";
+
+    function updateUser() {
+      const user = MF.getUser();
+      const nameEl = document.getElementById("sidebarName");
+      const avatarEl = document.getElementById("sidebarAvatar");
+      if (nameEl) nameEl.textContent = user.nickname || "访客";
+      if (avatarEl) avatarEl.textContent = (user.nickname || "访")[0];
+    }
+
+    function renderTransactions(filter) {
+      const container = document.getElementById("txList");
+      const countEl = document.getElementById("txCount");
+      if (!container) return;
+
+      let transactions = MF.getTransactions();
+      if (filter && filter !== "all") {
+        transactions = transactions.filter((tx) => tx.type === filter);
+      }
+
+      if (transactions.length === 0) {
+        container.innerHTML = `<div class="empty-state"><span class="empty-state__icon">📭</span><p id="txEmptyText">暂无记录</p></div>`;
+        if (countEl) countEl.textContent = "共 0 条记录";
+        return;
+      }
+
+      const ICON_MAP = {
+        "餐饮": "🍜", "交通": "🚌", "购物": "🛍️",
+        "娱乐": "🎮", "居住": "🏠", "医疗": "🏥",
+        "工资": "💰", "其他": "📦",
+      };
+      const ACCOUNT_NAMES = { wechat: "微信", alipay: "支付宝", card: "银行卡", cash: "现金" };
+
+      container.innerHTML = transactions.map((tx) => {
+        const icon = ICON_MAP[tx.category] || "📦";
+        const accountName = ACCOUNT_NAMES[tx.account] || tx.account;
+        return `
+          <div class="tx-item" data-type="${tx.type}">
+            <div class="tx-item__icon">${icon}</div>
+            <div class="tx-item__body">
+              <div class="tx-item__title">${tx.title}</div>
+              <div class="tx-item__meta">
+                <span>${tx.category}</span>
+                <span>·</span>
+                <span>${accountName}</span>
+                <span>·</span>
+                <span>${MF.formatDateTime(tx.datetime)}</span>
+              </div>
+            </div>
+            <div class="tx-item__amount amount ${tx.type === 'expense' ? 'amount--expense' : 'amount--income'}">
+              ${MF.formatCurrency(tx.amount, tx.type)}
+            </div>
+          </div>
+        `;
+      }).join("");
+
+      if (countEl) countEl.textContent = `共 ${transactions.length} 条记录`;
+    }
+
+    function updateSummary() {
+      const tx = MF.getTransactions();
+      const totalIncome = tx.filter((t) => t.type === "income").reduce((s, t) => s + t.amount, 0);
+      const totalExpense = tx.filter((t) => t.type === "expense").reduce((s, t) => s + t.amount, 0);
+
+      MF.animateNumber(document.getElementById("txTotalIncome"), totalIncome, 600);
+      MF.animateNumber(document.getElementById("txTotalExpense"), totalExpense, 600);
+      document.getElementById("txTotalCount").textContent = tx.length;
+    }
+
+    const filterGroup = document.getElementById("filterGroup");
+    if (filterGroup) {
+      filterGroup.addEventListener("click", (e) => {
+        const pill = e.target.closest(".pill");
+        if (!pill) return;
+        filterGroup.querySelectorAll(".pill").forEach((p) => p.classList.remove("is-active"));
+        pill.classList.add("is-active");
+        currentFilter = pill.dataset.filter;
+        renderTransactions(currentFilter);
+      });
+    }
+
+    function isToday(dateStr) {
+      var d = new Date(dateStr);
+      var t = new Date();
+      return d.getFullYear() === t.getFullYear() && d.getMonth() === t.getMonth() && d.getDate() === t.getDate();
+    }
+
+    function buildReceipt() {
+      var all = MF.getTransactions();
+      var todayTx = all.filter(function (tx) { return isToday(tx.datetime); });
+
+      var dateEl = document.getElementById("receiptDate");
+      var now = new Date();
+      dateEl.textContent = now.getFullYear() + "年" + (now.getMonth() + 1) + "月" + now.getDate() + "日";
+
+      var container = document.getElementById("receiptItemsContainer");
+      var summaryEl = document.getElementById("receiptSummary");
+
+      if (todayTx.length === 0) {
+        container.innerHTML = '<div style="text-align:center;padding:20px 0;font-size:12px;color:#888!important;">今日暂无收支记录</div>';
+        summaryEl.innerHTML = '<span style="color:#888!important;">总计：¥0.00</span>';
+        return;
+      }
+
+      var totalIncome = 0, totalExpense = 0;
+      var CAT_ICONS = { "餐饮": "🍜", "交通": "🚌", "购物": "🛍️", "娱乐": "🎮", "居住": "🏠", "医疗": "🏥", "工资": "💰", "其他": "📦" };
+      var ACCT_NAMES = { wechat: "微信", alipay: "支付宝", card: "银行卡", cash: "现金" };
+
+      container.innerHTML = todayTx.map(function (tx) {
+        if (tx.type === "income") totalIncome += tx.amount;
+        else totalExpense += tx.amount;
+        var sign = tx.type === "expense" ? "-" : "+";
+        return '<div class="receipt-item">'
+          + '<div class="receipt-item__left">'
+          + '<div class="receipt-item__title">' + (CAT_ICONS[tx.category] || "📦") + " " + tx.title + '</div>'
+          + '<div class="receipt-item__meta">' + tx.category + " · " + (ACCT_NAMES[tx.account] || tx.account) + '</div>'
+          + '</div>'
+          + '<div class="receipt-item__amount">' + sign + "¥" + tx.amount.toFixed(2) + '</div>'
+          + '</div>';
+      }).join("");
+
+      var net = totalIncome - totalExpense;
+      summaryEl.innerHTML = '<div>收入：<span style="color:#000!important;">+¥' + totalIncome.toFixed(2) + '</span></div>'
+        + '<div>支出：<span style="color:#000!important;">-¥' + totalExpense.toFixed(2) + '</span></div>'
+        + '<div style="margin-top:6px;"><strong>净额：<span style="color:#000!important;">' + (net >= 0 ? "+" : "") + '¥' + net.toFixed(2) + '</span></strong></div>';
+    }
+
+    function openReceipt() {
+      buildReceipt();
+      document.getElementById("receiptOverlay").classList.add("is-open");
+    }
+
+    function closeReceipt() {
+      document.getElementById("receiptOverlay").classList.remove("is-open");
+    }
+
+    function downloadReceipt() {
+      var doCapture = function () {
+        var target = document.getElementById("captureArea");
+        target.style.setProperty("--bg-body", "#F1F5F9");
+        html2canvas(target, {
+          backgroundColor: "#F1F5F9",
+          scale: 3,
+          logging: false,
+          height: target.scrollHeight,
+          windowHeight: target.scrollHeight,
+        }).then(function (canvas) {
+          var link = document.createElement("a");
+          link.download = "钱流记_" + document.getElementById("receiptDate").textContent.replace(/[年月]/g, "-").replace("日", "") + ".png";
+          link.href = canvas.toDataURL("image/png");
+          link.click();
+          target.style.removeProperty("--bg-body");
+        });
+      };
+      if (typeof html2canvas !== "undefined") {
+        doCapture();
+      } else {
+        var s = document.createElement("script");
+        s.src = "https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js";
+        s.onload = doCapture;
+        document.head.appendChild(s);
+      }
+    }
+
+    document.addEventListener("DOMContentLoaded", () => {
+      updateUser();
+      updateSummary();
+      renderTransactions("all");
+      document.getElementById("logoutBtn")?.addEventListener("click", () => { MF.logout(); });
+
+      document.getElementById("printReceiptBtn").addEventListener("click", openReceipt);
+      document.getElementById("closeReceiptBtn").addEventListener("click", closeReceipt);
+      document.getElementById("downloadReceiptBtn").addEventListener("click", downloadReceipt);
+      document.getElementById("receiptOverlay").addEventListener("click", function (e) {
+        if (e.target === this) closeReceipt();
+      });
+
+      setTimeout(async () => {
+        const el = document.getElementById("txEmptyText");
+        if (!el) return;
+        const candidates = await MF.generateBrandCopy("txEmpty");
+        if (!candidates) return;
+        let index = 0;
+        el.textContent = candidates[0];
+        const badge = Object.assign(document.createElement("span"), {
+          className: "copy-badge",
+          textContent: "AI ✦",
+          title: "点击切换",
+        });
+        Object.assign(badge.style, {
+          display: "inline-flex", alignItems: "center", gap: "2px", verticalAlign: "middle",
+          marginLeft: "8px", padding: "1px 7px", borderRadius: "99px",
+          fontSize: "10px", fontWeight: "600",
+          background: "rgba(16,185,129,0.12)", color: "#059669",
+          cursor: "pointer", userSelect: "none", lineHeight: "1.6",
+        });
+        badge.onclick = (e) => {
+          e.stopPropagation();
+          index = (index + 1) % 3;
+          el.textContent = candidates[index];
+          badge.textContent = `AI ✦ ${index + 1}/3`;
+        };
+        el.after(badge);
+      }, 100);
+    });
+  })();
+  </script>
+</body>
+</html>
